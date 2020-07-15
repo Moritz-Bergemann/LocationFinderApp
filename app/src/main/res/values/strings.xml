@@ -7,4 +7,6 @@
     <string name="location_placeholder">Location goes here</string>
 
     <string name="title">Location Tracker</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_title">Welcome to the app</string>
 </resources>

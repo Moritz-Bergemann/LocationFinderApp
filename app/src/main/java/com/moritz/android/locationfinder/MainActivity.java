@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.View;
@@ -26,6 +28,8 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "activity_main";
     private static final int LOCATION_REQUEST_CODE = 0;
+    AppViewModel model;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,12 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Getting ViewModel
+        model = new ViewModelProvider(this).get(AppViewModel.class);
+        model.getLocationEnabled().observe(this, locationEnabled -> {
+            //TODO stuff about location & whatnot
+        });
 
         //Creating listener for location changes
         LocationListener locationListener = new LocationListener() {
@@ -62,8 +72,10 @@ public class MainActivity extends AppCompatActivity {
             case LOCATION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "User granted location permissions");
+                    model.setHasLocationBeenDenied(false);
                 } else {
                     Log.d(TAG, "User denied location permissions");
+                    model.setHasLocationBeenDenied(true);
                 }
         }
     }

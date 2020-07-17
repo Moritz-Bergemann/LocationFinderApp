@@ -7,6 +7,10 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -14,11 +18,6 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class StartFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-
-    // TODO: Rename and change types of parameters
 
     public StartFragment() {
         // Required empty public constructor
@@ -40,15 +39,34 @@ public class StartFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            //Argument parsing stuff here
         }
     }
 
+    //This is called when the actual VIEW is created. You can't do stuff like assign values to
+    //  buttons in onCreate() because they haven't been created yet (I think this is done so that
+    //  you can keep a fragment alive while being able to kill its view to save resources)
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_start, container, false);
+        View view = inflater.inflate(R.layout.fragment_start, container, false);
+
+        //Adding buttons and whatnot
+        view.findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getActivity(), R.string.button_1_toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        view.findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO
+            }
+        });
+
+        return view;
     }
 }

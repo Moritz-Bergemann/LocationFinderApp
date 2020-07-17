@@ -9,4 +9,11 @@
     <string name="title">Location Tracker</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="app_title">Welcome to the app</string>
+    <string name="app_description">It is an app with various features</string>
+    <string name="button_description">Such as these two buttons which you can press on!</string>
+    <string name="button_1_label">This one</string>
+    <string name="button_2_label">That one</string>
+    <string name="button_1_toast">You pressed this button!</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

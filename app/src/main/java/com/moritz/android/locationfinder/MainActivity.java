@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.util.Log;
@@ -22,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     private AppViewModel mModel;
     private ViewPager2 mPager;
+    private int mPreviousPagerItem;
+
     private PagerAdapter mPagerAdapter;
 
 
@@ -36,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
         mModel = new ViewModelProvider(this).get(AppViewModel.class);
 
         //Setting up pager
-        mPagerAdapter = new
-
+        mPager = findViewById(R.id.pager);
+        mPreviousPagerItem = mPager.getCurrentItem();
 
 //        model.getLocationEnabled().observe(this, new Observer<Boolean>() {
 //            @Override
@@ -67,6 +70,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        //Make back press move back one page (unless on first page, then just do what you'd normally do)
+        if (mPager.getCurrentItem() == 0) {
+            super.onBackPressed();
+        } else {
+            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -79,6 +92,19 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "User denied location permissions");
                     mModel.setHasLocationBeenDenied(true);
                 }
+        }
+    }
+
+    private class PagerAdapter extends FragmentStateAdapter {
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return new
+        }
+
+        @Override
+        public int getItemCount() {
+            return 0;
         }
     }
 }

@@ -15,5 +15,9 @@
     <string name="button_2_label">That one</string>
     <string name="button_1_toast">You pressed this button!</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">Hello location fragment</string>
+    <string name="location_title">Location</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="location_disabled_info">This app has not been given permissions to access the device location. Please use the system settings to give location access for use of this feature.</string>
 </resources>

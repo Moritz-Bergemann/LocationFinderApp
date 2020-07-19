@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar;
  * create an instance of this fragment.
  */
 public class StartFragment extends Fragment {
+    private static final String TAG = "start_fragment";
 
     public StartFragment() {
         // Required empty public constructor

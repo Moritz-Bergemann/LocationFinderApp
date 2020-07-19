@@ -1,15 +1,18 @@
 package com.moritz.android.locationfinder;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -21,9 +24,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int NUM_PAGES = 2;
 
-    private AppViewModel mModel;
+    private AppViewModel mViewModel;
     private ViewPager2 mPager;
-    private int mPreviousPagerItem;
 
     private PagerAdapter mPagerAdapter;
 
@@ -36,37 +38,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Getting ViewModel
-        mModel = new ViewModelProvider(this).get(AppViewModel.class);
+        mViewModel = new ViewModelProvider(this).get(AppViewModel.class);
 
         //Setting up pager
         mPager = findViewById(R.id.pager);
-        mPreviousPagerItem = mPager.getCurrentItem();
 
-//        model.getLocationEnabled().observe(this, new Observer<Boolean>() {
-//            @Override
-//            public void onChanged(Boolean locationEnabled) {
-//                //TODO stuff about location & whatnot
-//            }
-//        });
-//
-//        //Creating listener for location changes
-//        LocationListener locationListener = new LocationListener() {
-//            @Override
-//            public void onLocationChanged(@NonNull Location location) {
-//                Log.v(TAG, "Location Changed");
-//            }
-//        };
-//
-//        TextView locationView = findViewById(R.id.location);
-//
-//        //Creating locationManager which will provide location info from operating system
-//        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//        //Getting location updates from the OS
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            //Requesting permissions if not already granted
-//            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION }, LOCATION_REQUEST_CODE);
-//        }
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        //Create new pager adapter connected to this activity, then connect it to the pager
+        mPagerAdapter = new PagerAdapter(this);
+        mPager.setAdapter(mPagerAdapter);
+
+        //LOCATION MANAGEMENT
+
+        //Creating listener for location changes (that will update the model accordingly)
+        LocationListener locationListener = mViewModel.createLocationListener();
+
+        //Creating locationManager which will provide location info from operating system
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        //Getting location updates from the OS
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //Requesting permissions if not already granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        }
     }
 
     @Override
@@ -87,24 +84,43 @@ public class MainActivity extends AppCompatActivity {
             case LOCATION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "User granted location permissions");
-                    mModel.setHasLocationBeenDenied(false);
+                    mViewModel.setIsLocationEnabled(false);
                 } else {
                     Log.d(TAG, "User denied location permissions");
-                    mModel.setHasLocationBeenDenied(true);
+                    mViewModel.setIsLocationEnabled(true);
                 }
         }
     }
 
     private class PagerAdapter extends FragmentStateAdapter {
+        public PagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
+        }
+
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            return new
+            Fragment returnFragment;
+
+            switch (position) {
+                case 0:
+                    returnFragment = new StartFragment();
+                    break;
+                case 1:
+                    returnFragment = new LocationFragment();
+                    break;
+                default:
+                    Log.e(TAG, "Attempted to access invalid page");
+                    returnFragment = null;
+                    break;
+            }
+
+            return returnFragment;
         }
 
         @Override
         public int getItemCount() {
-            return 0;
+            return NUM_PAGES;
         }
     }
 }

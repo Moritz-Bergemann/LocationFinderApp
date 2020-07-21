@@ -94,15 +94,17 @@ public class LocationFragment extends Fragment {
         final TextView latitudeTextView = view.findViewById(R.id.latitudeTextView); //FIXME is the 'final' dodgy?
         final TextView longitudeTextView = view.findViewById(R.id.longitudeTextView);
 
-        latitudeTextView.setText("Pending...");
-        longitudeTextView.setText("Pending...");
+        if (mViewModel.getLocationData().getValue() == null) {
+            latitudeTextView.setText(R.string.null_value);
+            longitudeTextView.setText(R.string.null_value);
+        }
 
         //Updating location fields when location changes
         mViewModel.getLocationData().observe(getActivity(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                latitudeTextView.setText(String.format(Locale.US, ".4%f", location.getLatitude()));
-                longitudeTextView.setText(String.format(Locale.US, ".4%f", location.getLongitude()));
+                latitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLatitude()));
+                longitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLongitude()));
             }
         });
     }
@@ -110,15 +112,21 @@ public class LocationFragment extends Fragment {
     private void checkLocationEnabled() {
         try {
             if (mViewModel.getLocationEnabled().getValue()) { //If location is enabled
-                //TODO
-            }
-            else { //If location access has been denied
-                //Changing visibilities to show the right thi
+                mLocationInfoLayout.setVisibility(View.VISIBLE);
+                mLocationDisabledInfoLayout.setVisibility(View.GONE);
+
+                Log.d(TAG, "Location fragment found location to be enabled");
+            } else { //If location access has been denied
+                //Changing visibilities to show only the notice about options being unavailable
                 mLocationInfoLayout.setVisibility(View.GONE);
                 mLocationDisabledInfoLayout.setVisibility(View.VISIBLE);
+
+                Log.d(TAG, "Location fragment found location to be disabled");
             }
         } catch (NullPointerException np) {
-            Log.e(TAG, "Value of \'LocationEnabled\' was NULL"); //FIXME this is always raised
+            Log.e(TAG, "Value of \'LocationEnabled\' was NULL");
         }
     }
+
+
 }

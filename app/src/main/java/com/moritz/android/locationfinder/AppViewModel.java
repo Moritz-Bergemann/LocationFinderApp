@@ -2,6 +2,7 @@ package com.moritz.android.locationfinder;
 
 import android.location.Location;
 import android.location.LocationListener;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -11,6 +12,8 @@ import androidx.lifecycle.ViewModel;
 public class AppViewModel extends ViewModel {
     //LOCATION ACCESS
     private MutableLiveData<Boolean> isLocationEnabled;
+
+    private static final String TAG = "app_view_model";
 
     public LiveData<Boolean> getLocationEnabled() {
         if (isLocationEnabled == null) {
@@ -48,15 +51,26 @@ public class AppViewModel extends ViewModel {
         return locationData;
     }
 
+    public void initialiseLocationData(Location location) {
+        locationData = new MutableLiveData<>();
+        locationData.postValue(location);
+    }
+
     /**
      * Makes the listener that will update the location value held by this ViewModel (must be
      *  externally set to listen to location services)
      * @return the listener to listen to for location updates
      */
     public LocationListener createLocationListener() {
+        if (locationData == null) {
+            locationData = new MutableLiveData<>();
+        }
+
         return new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
+                Log.v(TAG, "Location listener received location update");
+
                 locationData.postValue(location);
             }
         };

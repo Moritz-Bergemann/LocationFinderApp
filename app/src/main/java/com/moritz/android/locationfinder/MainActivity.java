@@ -48,21 +48,32 @@ public class MainActivity extends AppCompatActivity {
         mPager.setAdapter(mPagerAdapter);
 
         //LOCATION MANAGEMENT
-
         //Creating listener for location changes (that will update the model accordingly)
         LocationListener locationListener = mViewModel.createLocationListener();
 
         //Creating locationManager which will provide location info from operating system
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        //Getting location updates from the OS
+        //Requesting location updates from the OS (if we don't already have them)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Requesting location permissions");
+
             //Requesting permissions if not already granted
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+        } else {
+            Log.d(TAG, "Not requesting location permissions as the app already had them");
         }
 
+        //Starting the getting of location updates if location updates were received
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Starting listening for location updates");
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+            mViewModel.setIsLocationEnabled(true);
+
+            //Initialising location value
+            mViewModel.initialiseLocationData(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+        } else {
+            mViewModel.setIsLocationEnabled(false);
         }
     }
 
@@ -80,14 +91,16 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
+        Log.d(TAG, "System got permission result");
+
         switch (requestCode) {
             case LOCATION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "User granted location permissions");
-                    mViewModel.setIsLocationEnabled(false);
+                    mViewModel.setIsLocationEnabled(true);
                 } else {
                     Log.d(TAG, "User denied location permissions");
-                    mViewModel.setIsLocationEnabled(true);
+                    mViewModel.setIsLocationEnabled(false);
                 }
         }
     }

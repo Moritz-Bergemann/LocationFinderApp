@@ -13,15 +13,16 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -90,43 +91,128 @@ public class LocationFragment extends Fragment {
             }
         });
 
-        //Setting up location connection stuff
-        final TextView latitudeTextView = view.findViewById(R.id.latitudeTextView); //FIXME is the 'final' dodgy?
-        final TextView longitudeTextView = view.findViewById(R.id.longitudeTextView);
-
-        if (mViewModel.getLocationData().getValue() == null) {
-            latitudeTextView.setText(R.string.null_value);
-            longitudeTextView.setText(R.string.null_value);
-        }
-
-        //Updating location fields when location changes
-        mViewModel.getLocationData().observe(getActivity(), new Observer<Location>() {
-            @Override
-            public void onChanged(Location location) {
-                latitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLatitude()));
-                longitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLongitude()));
-            }
-        });
     }
 
     private void checkLocationEnabled() {
         try {
             if (mViewModel.getLocationEnabled().getValue()) { //If location is enabled
+                Log.d(TAG, "Location fragment found location to be enabled");
+
                 mLocationInfoLayout.setVisibility(View.VISIBLE);
                 mLocationDisabledInfoLayout.setVisibility(View.GONE);
 
-                Log.d(TAG, "Location fragment found location to be enabled");
+                //Creating locationManager which will provide location info from operating system
+                LocationManager locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+
+                //Creating listener for location changes (that will update the model accordingly)
+                LocationListener locationListener = mViewModel.createLocationListener();
+
+                //Crashing in case model is wrong about having location permissions
+                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    throw new IllegalArgumentException("Did not have location permissions when model believed it did");
+                }
+
+                //Getting location updates (using listener tied to ViewModel)
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+
+                //Initialising location value
+                mViewModel.initialiseLocationData(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+
+                //Setting up location connection stuff
+                final TextView latitudeTextView = requireView().findViewById(R.id.latitudeTextView); //FIXME is the 'final' dodgy?
+                final TextView longitudeTextView = requireView().findViewById(R.id.longitudeTextView);
+
+                if (mViewModel.getLocationData().getValue() == null) {
+                    latitudeTextView.setText(R.string.null_value);
+                    longitudeTextView.setText(R.string.null_value);
+                }
+
+                //Updating location fields when location changes
+                mViewModel.getLocationData().observe(requireActivity(), new Observer<Location>() {
+                    @Override
+                    public void onChanged(Location location) {
+                        latitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLatitude()));
+                        longitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLongitude()));
+                    }
+                });
+
+                //Saving location functionality
+                Button saveCurLocationButton = requireView().findViewById(R.id.saveCurLocationButton);
+                TextView lastSavedPositionTextView = requireView().findViewById(R.id.lastSavedPositionTextView);
+
+                showSavedLocation(mViewModel.getLocationData().getValue(), lastSavedPositionTextView); //Shows saved location if it already exists (e.g. after rotate)
+
+                mViewModel.getSavedLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+                    @Override
+                    public void onChanged(Location location) {
+                        showSavedLocation(location, lastSavedPositionTextView);
+                    }
+                });
+
+                saveCurLocationButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mViewModel.setSavedLocation(mViewModel.getLocationData().getValue());
+                    }
+                });
+
+                //Show distance to saved location functionality
+                Button getDistToSavedButton = requireView().findViewById(R.id.getDistToSavedButton);
+                TextView distanceFromSavedPositionTextView = requireView().findViewById(R.id.distanceFromSavedPositionTextView);
+
+                showDistance(mViewModel.getDistanceToSaved().getValue(), distanceFromSavedPositionTextView);
+
+                mViewModel.getDistanceToSaved().observe(getViewLifecycleOwner(), new Observer<Float>() {
+                    @Override
+                    public void onChanged(Float aFloat) {
+                        showDistance(aFloat, distanceFromSavedPositionTextView);
+                    }
+                });
+
+                getDistToSavedButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Location curLocation = mViewModel.getLocationData().getValue();
+                        Location savedLocation = mViewModel.getSavedLocation().getValue();
+
+                        if (savedLocation != null) { //If a saved location has been set
+                            //Setting distance value in ViewModel
+                            mViewModel.setDistanceToSaved(curLocation.distanceTo(savedLocation));
+                        } else {
+                            Toast.makeText(requireActivity(), R.string.need_saved_location, Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+
             } else { //If location access has been denied
                 //Changing visibilities to show only the notice about options being unavailable
+                Log.d(TAG, "Location fragment found location to be disabled");
+
                 mLocationInfoLayout.setVisibility(View.GONE);
                 mLocationDisabledInfoLayout.setVisibility(View.VISIBLE);
 
-                Log.d(TAG, "Location fragment found location to be disabled");
+                mViewModel.getLocationData().removeObservers(getViewLifecycleOwner()); //FIXME what if there's other observers elsewhere?
+
+                //FIXME does this clean up any previous location listeners properly?
             }
         } catch (NullPointerException np) {
             Log.e(TAG, "Value of \'LocationEnabled\' was NULL");
         }
     }
 
+    private void showSavedLocation(Location location, TextView textView) {
+        if (location != null) {
+            String locationString = String.format(Locale.US, "%.4f N %.4f W",
+                    location.getLatitude(), location.getLongitude());
+            textView.setText(locationString);
+        }
+    }
 
+    private void showDistance(Float aFloat, TextView textView) {
+        if (aFloat != null) {
+            String distanceString = String.format(Locale.US, "%.2f m", aFloat);
+            textView.setText(distanceString);
+        }
+    }
 }

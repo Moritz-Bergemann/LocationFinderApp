@@ -25,4 +25,5 @@
     <string name="get_current_distance_to_saved_location">Get current distance to saved location</string>
     <string name="distance_to_saved_label">Distance from current to saved:</string>
     <string name="last_saved_position_label">Last saved position:</string>
+    <string name="need_saved_location">Save a location to calculate the distance from it.</string>
 </resources>

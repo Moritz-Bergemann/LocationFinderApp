@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -48,11 +47,6 @@ public class MainActivity extends AppCompatActivity {
         mPager.setAdapter(mPagerAdapter);
 
         //LOCATION MANAGEMENT
-        //Creating listener for location changes (that will update the model accordingly)
-        LocationListener locationListener = mViewModel.createLocationListener();
-
-        //Creating locationManager which will provide location info from operating system
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         //Requesting location updates from the OS (if we don't already have them)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -64,14 +58,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Not requesting location permissions as the app already had them");
         }
 
-        //Starting the getting of location updates if location updates were received
+        //Checking if we now have permission to get the location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Starting listening for location updates");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
             mViewModel.setIsLocationEnabled(true);
 
-            //Initialising location value
-            mViewModel.initialiseLocationData(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
         } else {
             mViewModel.setIsLocationEnabled(false);
         }

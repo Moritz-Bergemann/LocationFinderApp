@@ -106,7 +106,7 @@
                     android:text="@string/last_saved_position_label" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/lastSavedPositionTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -127,7 +127,7 @@
                     android:text="@string/distance_to_saved_label" />
 
                 <TextView
-                    android:id="@+id/textView7"
+                    android:id="@+id/distanceFromSavedPositionTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"

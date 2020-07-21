@@ -75,4 +75,43 @@ public class AppViewModel extends ViewModel {
             }
         };
     }
+
+    //SAVED LOCATION DATA (FOR MEASURING DISTANCES)
+    private MutableLiveData<Location> savedLocation;
+
+    public LiveData<Location> getSavedLocation() {
+        if (savedLocation == null) {
+            savedLocation = new MutableLiveData<>();
+        }
+
+        return savedLocation;
+    }
+
+    public void setSavedLocation(Location location) {
+        if (savedLocation == null) {
+            savedLocation = new MutableLiveData<>();
+        }
+
+        //Updating location value
+        savedLocation.postValue(location);
+    }
+
+    //DISTANCE DATA FIXME I might be overusing LiveData here
+    private MutableLiveData<Float> distanceToSaved;
+
+    public LiveData<Float> getDistanceToSaved() {
+        if (distanceToSaved == null) {
+            distanceToSaved = new MutableLiveData<>();
+        }
+
+        return distanceToSaved;
+    }
+
+    public void setDistanceToSaved(float distance) {
+        if (distanceToSaved == null) {
+            distanceToSaved = new MutableLiveData<>();
+        }
+
+        distanceToSaved.postValue(distance);
+    }
 }

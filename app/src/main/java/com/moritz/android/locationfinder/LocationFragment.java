@@ -123,16 +123,20 @@ public class LocationFragment extends Fragment {
                 final TextView longitudeTextView = requireView().findViewById(R.id.longitudeTextView);
 
                 if (mViewModel.getLocationData().getValue() == null) {
-                    latitudeTextView.setText(R.string.null_value);
-                    longitudeTextView.setText(R.string.null_value);
+                    latitudeTextView.setText(R.string.pending_location);
+                    longitudeTextView.setText(R.string.pending_location);
                 }
 
                 //Updating location fields when location changes
                 mViewModel.getLocationData().observe(requireActivity(), new Observer<Location>() {
                     @Override
                     public void onChanged(Location location) {
-                        latitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLatitude()));
-                        longitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLongitude()));
+                        if (location != null) { //FIXME don't think this should be necessary
+                            latitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLatitude()));
+                            longitudeTextView.setText(String.format(Locale.US, "%.4f", location.getLongitude()));
+                        } else {
+                            Toast.makeText(getContext(), R.string.failed_to_get_location, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 

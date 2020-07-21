@@ -20,10 +20,11 @@
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
     <string name="location_disabled_info">This app has not been given permissions to access the device location. Please use the system settings to give location access for use of this feature.</string>
-    <string name="null_value">NULL</string>
     <string name="save_current_location">Save Current Location</string>
     <string name="get_current_distance_to_saved_location">Get current distance to saved location</string>
     <string name="distance_to_saved_label">Distance from current to saved:</string>
     <string name="last_saved_position_label">Last saved position:</string>
     <string name="need_saved_location">Save a location to calculate the distance from it.</string>
+    <string name="pending_location">Pending…</string>
+    <string name="failed_to_get_location">Failed to receive GPS location value. Retrying...</string>
 </resources>
